@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\JobResource;
 use App\Models\Job;
 use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateJobRequest;
+use App\Http\Resources\JobResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class JobController extends Controller
 {
@@ -56,27 +57,60 @@ class JobController extends Controller
         return JobResource::collection($query->paginate($perPage));
 }
 
-    public function store(\App\Http\Requests\StoreJobRequest $request): JobResource
+    public function store(\App\Http\Requests\StoreJobRequest $request)
     {
-        $job = \App\Models\Job::created($request->calidated());
-        return new JobResource($job);
+        // پیدا کردن کارفرمای متعلق به کاربر لاگین شده
+        $employer = $request->user()->employer;
+
+        if (!$employer) {
+            return response()->json(['message' => 'You must have an employer profile to post jobs.'], 403);
+        }
+
+        // ساخت شغل جدید همراه با آیدی کارفرمای واقعی لاگین شده
+        $job = \App\Models\Job::create(array_merge(
+            $request->validated(),
+            ['employer_id' => $employer->employer_id]
+        ));
+
+        return new \App\Http\Resources\JobResource($job);
     }
+
 
     public function show(\App\Models\Job $job): JobResource
     {
         return new JobResource($job->load(['employer', 'applications']));
     }
 
-    // ویرایش اطلاعات یک آگهی شغلی خاص
-    public function update(\App\Http\Requests\UpdateJobRequest $request, \App\Models\Job $job): JobResource
+        // ویرایش اطلاعات یک آگهی شغلی خاص همراه با بررسی سطح دسترسی
+    public function update(UpdateJobRequest $request, Job $job): JsonResponse
     {
+        $user = $request->user();
+
+        // بررسی مالکیت شغل
+        if (!$user->employer || $user->employer->employer_id !== $job->employer_id) {
+            return response()->json([
+                'message' => 'You are not allowed to do that',
+                'errors'  => new \stdClass(),
+            ], 403);
+        }
+
         $job->update($request->validated());
-        return new JobResource($job);
+        return response()->json($job, 200);
     }
 
-    // حذف کامل یک آگهی شغلی از سیستم
-    public function destroy(\App\Models\Job $job): \Illuminate\Http\JsonResponse
+    // حذف کامل یک آگهی شغلی از سیستم همراه با بررسی سطح دسترسی
+    public function destroy(Request $request, Job $job): JsonResponse
     {
+        $user = $request->user();
+
+        // بررسی مالکیت شغل
+        if (!$user->employer || $user->employer->employer_id !== $job->employer_id) {
+            return response()->json([
+                'message' => 'You are not allowed to do that',
+                'errors'  => new \stdClass(),
+            ], 403);
+        }
+
         $job->delete();
         return response()->json(null, 204);
     }

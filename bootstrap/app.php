@@ -16,29 +16,32 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-           $exceptions->render(function (
-        \Illuminate\Database\Eloquent\ModelNotFoundException $e,
-        \Illuminate\Http\Request $request
-    ) {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Resource not found',
-                'errors'  => new \stdClass(),
-            ], 404);
-        }
-    });
+        // مدیریت خطای عدم احراز هویت (AuthenticationException - 401) طبق بند 4.1 استاد
+        $exceptions->render(function (
+            \Illuminate\Auth\AuthenticationException $e,
+            \Illuminate\Http\Request $request
+        ) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Authentication required',
+                    'errors'  => new \stdClass(), // ابجکت خالی استاندارد
+                ], 401);
+            }
+        });
 
-    $exceptions->render(function (
-        \Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e,
-        \Illuminate\Http\Request $request
-    ) {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Endpoint not found',
-                'errors'  => new \stdClass(),
-            ], 404);
-        }
-    });
+        // مدیریت خطای عدم سطح دسترسی (AuthorizationException - 403) طبق بند 4.1 استاد
+        $exceptions->render(function (
+            \Illuminate\Auth\Access\AuthorizationException $e,
+            \Illuminate\Http\Request $request
+        ) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage() ?: 'You are not allowed to do that',
+                    'errors'  => new \stdClass(),
+                ], 403);
+            }
+        });
+
 })
 
 ->create();
