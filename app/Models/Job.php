@@ -15,6 +15,7 @@ class Job extends Model
         'description',
         'salary',
         'location',
+        'type',
         'deadline',
     ];
     public function employer(){

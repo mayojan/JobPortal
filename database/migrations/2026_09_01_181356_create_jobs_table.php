@@ -19,6 +19,7 @@ return new class extends Migration
         $table->text('description');
         $table->decimal('salary', 10, 2)->nullable();
         $table->string('location');
+        $table->enum('type', ['full-time', 'part-time', 'remote', 'contract'])->default('full-time');
         $table->date('deadline');
         $table->timestamps();
         });

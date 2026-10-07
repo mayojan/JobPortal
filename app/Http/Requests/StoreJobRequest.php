@@ -23,13 +23,13 @@ class StoreJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-                    'employer_id' => [
-            'required', \Illuminate\Validation\Rule::exists('employers', 'employer_id')],
-            'job_title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'salary' => 'nullable|numeric|min:0',
-            'location' => 'required|string|max:255',
-            'deadline' => 'required|date|after:today', // تاریخ انقضا باید برای آینده باشد
+                'employer_id' => ['required', \Illuminate\Validation\Rule::exists('employers', 'employer_id')],
+                'job_title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'salary' => 'nullable|numeric|min:0',
+                'location' => 'required|string|max:255', // اجباری برای فیلتر جستجو
+                'type' => 'required|in:full-time,part-time,remote,contract', // نوع شغل باید یکی از مقادیر مشخص شده باشد
+                'deadline' => 'required|date|after:today', // تاریخ انقضا باید برای آینده باشد
         ];
     }
 }

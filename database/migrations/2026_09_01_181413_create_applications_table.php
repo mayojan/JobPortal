@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id('application_id');
         $table->foreignId('job_id')->constrained('jobs', 'job_id')->onDelete('cascade');
         $table->foreignId('candidate_id')->constrained('candidates', 'candidate_id')->onDelete('cascade');
-        $table->string('status')->default('pending');
+        $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending'); // وضعیت درخواست
         $table->timestamps();
         });
     }

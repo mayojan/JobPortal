@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Resources\EmployerResource;
 use App\Http\Requests\UpdateEmployerRequest;
 use App\Http\Requests\StoreEmployerRequest;
 use Illuminate\Http\Request;
@@ -10,47 +11,41 @@ class EmployerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): \illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
-        return \App\Models\Employer::with('jobs')->latest()->paginate(15);
+        return EmployerResource::collection(\App\Models\Employer::with('jobs')->latest()->paginate(15));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreEmployerRequest $request)
+    public function store(\App\Http\Requests\StoreEmployerRequest $request): EmployerResource
     {
-        // دیتای تایید شده را میگیرد و کارفرما را میسازد
         $employer = \App\Models\Employer::create($request->validated());
-        
-        //پاسخ را با کد ظ ظ store ۲ روان میکند یعنی ساخته شد
-        return response()->json($employer, 201);
+        return new EmployerResource($employer); // پوشش Resource
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(\App\Models\Employer $employer)
+    public function show(\App\Models\Employer $employer): EmployerResource
     {
-        return $employer->load('jobs');
+        return new EmployerResource($employer->load('jobs'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEmployerRequest $request, \App\Models\Employer $employer)
+    
+    public function update(\App\Http\Requests\UpdateEmployerRequest $request, \App\Models\Employer $employer): EmployerResource
     {
         // دیتای تایید شده را برمی‌دارد و کارفرما را ویرایش می‌کند
         $employer->update($request->validated());
 
         // کارفرمای آپدیت شده را با کد ۲۰۰ OK پس می‌فرستد
-        return response()->json($employer, 200);
+        return new EmployerResource($employer);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(\App\Models\Employer $employer)
+    public function destroy(\App\Models\Employer $employer): \Illuminate\Http\JsonResponse
     {
         // کارفرما را از دیتابیس پاک می‌کند
         $employer->delete();
