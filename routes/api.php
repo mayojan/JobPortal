@@ -27,6 +27,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('candidates',CandidateController::class);
         Route::apiResource('applications',ApplicationController::class);
         Route::apiResource('cvs',CvController::class);
+        Route::post('/me/avatar', [\App\Http\Controllers\UserController::class, 'uploadAvatar']);
     });
 
 });

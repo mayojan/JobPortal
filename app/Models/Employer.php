@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Employer extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'employer_id';
+    protected $primaryKey = 'employer_id'; // کلید اصلی سفارشی 
 
     protected $fillable = [
         'user_id',
@@ -25,6 +25,6 @@ class Employer extends Model
 
     public function jobs()
     {
-        return $this->hasMany(Job::class, 'employer_id');
+        return $this->hasMany(Job::class, 'employer_id', 'employer_id');
     }
 }
